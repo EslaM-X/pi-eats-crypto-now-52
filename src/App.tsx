@@ -34,6 +34,7 @@ import AdminPayments from "./pages/admin/AdminPayments";
 import AdminStatistics from "./pages/admin/AdminStatistics";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminLogin from "./pages/admin/AdminLogin";
+import Auth from "./pages/Auth";
 
 // Configure the QueryClient with Pi Network styling
 const queryClient = new QueryClient({
@@ -68,6 +69,7 @@ const AppContent = () => {
           <Route path="/homefood/add" element={<AddFoodListing />} />
           <Route path="/pi-payment" element={<PiPaymentDemo />} />
           <Route path="/restaurant-dashboard" element={<RestaurantDashboard />} />
+          <Route path="/auth" element={<Auth />} />
           
           {/* صفحة تسجيل دخول المسؤول */}
           <Route path="/admin/login" element={<AdminLogin />} />

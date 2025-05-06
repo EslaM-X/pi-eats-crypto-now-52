@@ -6,8 +6,20 @@ import AdminSidebar from './components/AdminSidebar';
 import AdminHeader from './components/AdminHeader';
 
 const AdminLayout: React.FC = () => {
-  const { isAdmin } = useAdminAuth();
+  const { isAdmin, isLoading } = useAdminAuth();
   const navigate = useNavigate();
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+        <div className="text-center">
+          <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>التحقق من الصلاحيات...</p>
+        </div>
+      </div>
+    );
+  }
 
   // إذا لم يكن المستخدم مسؤولاً، قم بتوجيهه إلى صفحة تسجيل الدخول
   if (!isAdmin) {

@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, LogIn, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,31 +12,63 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { usePiAuth } from '@/contexts/PiAuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSupabaseAuth } from '@/contexts/SupabaseAuthContext';
 
 const UserMenu = () => {
-  const { user, login, logout, isAuthenticating } = usePiAuth();
+  const { user: piUser, login: piLogin, logout: piLogout, isAuthenticating } = usePiAuth();
+  const { user: supabaseUser, profile, loading, signOut } = useSupabaseAuth();
   const { t } = useLanguage();
+
+  // Use Supabase authentication if available, fallback to Pi Network auth
+  const user = supabaseUser || piUser;
+  
+  const handleLogin = () => {
+    // Redirect to auth page for Supabase auth
+    window.location.href = '/auth';
+  };
+  
+  const handleLogout = () => {
+    if (supabaseUser) {
+      signOut();
+    } else if (piUser) {
+      piLogout();
+    }
+  };
 
   if (!user) {
     return (
       <Button
-        onClick={login}
-        disabled={isAuthenticating}
+        onClick={handleLogin}
+        disabled={isAuthenticating || loading}
         className="button-gradient"
       >
-        {isAuthenticating ? t('loading') : t('auth.connectWithPi')}
+        {isAuthenticating || loading ? t('loading') : (
+          <>
+            <LogIn className="mr-2 h-4 w-4" />
+            {t('auth.login')}
+          </>
+        )}
       </Button>
     );
   }
+
+  // Get display name and avatar from appropriate source
+  const displayName = profile?.username || user.username || user.email?.split('@')[0] || 'User';
+  const avatarUrl = profile?.avatar_url;
+  const initials = displayName.substring(0, 2).toUpperCase();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="flex items-center space-x-2">
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-pi text-white">
-              {user.username.substring(0, 2).toUpperCase()}
-            </AvatarFallback>
+            {avatarUrl ? (
+              <AvatarImage src={avatarUrl} alt={displayName} />
+            ) : (
+              <AvatarFallback className="bg-pi text-white">
+                {initials}
+              </AvatarFallback>
+            )}
           </Avatar>
           <ChevronDown className="h-4 w-4" />
         </Button>
@@ -51,7 +83,12 @@ const UserMenu = () => {
         <DropdownMenuItem asChild>
           <Link to="/orders">{t('nav.orders')}</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={logout}>
+        {profile?.is_provider && (
+          <DropdownMenuItem asChild>
+            <Link to="/admin">{t('nav.adminDashboard')}</Link>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem onClick={handleLogout}>
           {t('auth.logout')}
         </DropdownMenuItem>
       </DropdownMenuContent>
