@@ -53,7 +53,11 @@ const UserMenu = () => {
   }
 
   // Get display name and avatar from appropriate source
-  const displayName = profile?.username || user.username || user.email?.split('@')[0] || 'User';
+  // Fix the type error by safely accessing properties and providing fallbacks
+  const displayName = profile?.username || 
+    (piUser && 'username' in piUser ? piUser.username : '') || 
+    (supabaseUser && supabaseUser.email ? supabaseUser.email.split('@')[0] : '') || 
+    'User';
   const avatarUrl = profile?.avatar_url;
   const initials = displayName.substring(0, 2).toUpperCase();
 
